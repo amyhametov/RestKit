@@ -299,6 +299,9 @@ NSCoding, NSCopying>
  */
 - (void)setCacheResponseBlock:(NSCachedURLResponse * (^)(NSURLConnection *connection, NSCachedURLResponse *cachedResponse))block;
 
+@property (nonatomic,readonly) NSInteger ttfb;
+@property (nonatomic,readonly) NSInteger latency;
+
 @end
 
 ///----------------

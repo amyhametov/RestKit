@@ -130,6 +130,12 @@ static BOOL AFRKSecKeyIsEqualToKey(SecKeyRef key1, SecKeyRef key2) {
 }
 
 @interface AFRKURLConnectionOperation ()
+{
+    NSDate *startTime;
+    NSDate *responseTime;
+    NSDate *finishTime;
+}
+
 @property (readwrite, nonatomic, assign) AFRKOperationState state;
 @property (readwrite, nonatomic, assign, getter = isCancelled) BOOL cancelled;
 @property (readwrite, nonatomic, strong) NSRecursiveLock *lock;
@@ -530,6 +536,8 @@ static BOOL AFRKSecKeyIsEqualToKey(SecKeyRef key1, SecKeyRef key2) {
             [self.outputStream scheduleInRunLoop:runLoop forMode:runLoopMode];
         }
         
+        startTime = [NSDate date];
+        
         [self.connection start];
     }
     [self.lock unlock];
@@ -551,6 +559,8 @@ static BOOL AFRKSecKeyIsEqualToKey(SecKeyRef key1, SecKeyRef key2) {
 
 - (void)finish {
     self.state = AFRKOperationFinishedState;
+    
+    finishTime = [NSDate date];
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:AFRKNetworkingOperationDidFinishNotification object:self];
@@ -727,6 +737,8 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
 - (void)connection:(NSURLConnection __unused *)connection
 didReceiveResponse:(NSURLResponse *)response
 {
+    responseTime = [NSDate date];
+    
     self.response = response;
     
     [self.outputStream open];
@@ -863,6 +875,23 @@ didReceiveResponse:(NSURLResponse *)response
     operation.allowsInvalidSSLCertificate = self.allowsInvalidSSLCertificate;
     
     return operation;
+}
+
+#pragma mark - Other
+
+- (NSInteger) ttfb {
+    if (startTime == nil || responseTime == nil) {
+        return -1;
+    }
+
+    return (NSUInteger)((responseTime.timeIntervalSinceReferenceDate - startTime.timeIntervalSinceReferenceDate) * 1000);
+}
+
+- (NSInteger) latency {
+    if (startTime == nil || finishTime == nil) {
+        return -1;
+    }
+    return (NSUInteger)((finishTime.timeIntervalSinceReferenceDate - startTime.timeIntervalSinceReferenceDate) * 1000);
 }
 
 @end
