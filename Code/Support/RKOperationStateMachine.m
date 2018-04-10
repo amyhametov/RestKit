@@ -132,11 +132,14 @@ static NSString *const RKOperationLockName = @"org.restkit.operation.lock";
 - (void)start
 {
     if (! self.dispatchQueue) [NSException raise:NSInternalInconsistencyException format:@"You must configure an `operationQueue`."];
-    [self performBlockWithLock:^{
-        NSError *error = nil;
-        BOOL success = [self.stateMachine fireEvent:RKOperationEventStart userInfo:nil error:&error];
-        if (! success) [NSException raise:RKOperationFailureException format:@"The operation unexpectedly failed to start due to an error: %@", error];
-    }];
+
+    dispatch_async(self.dispatchQueue, ^{
+        [self performBlockWithLock:^{
+            NSError *error = nil;
+            BOOL success = [self.stateMachine fireEvent:RKOperationEventStart userInfo:nil error:&error];
+            if (! success) [NSException raise:RKOperationFailureException format:@"The operation unexpectedly failed to start due to an error: %@", error];
+        }];
+    });
 }
 
 - (void)finish
@@ -154,15 +157,14 @@ static NSString *const RKOperationLockName = @"org.restkit.operation.lock";
 - (void)cancel
 {
     if ([self isCancelled] || [self isFinished]) return;
-    [self performBlockWithLock:^{
-        self.cancelled = YES;
-    }];
 
-    if (self.cancellationBlock) {
-        dispatch_async(self.dispatchQueue, ^{
+    dispatch_async(self.dispatchQueue, ^{
+        self.cancelled = YES;
+
+        if (self.cancellationBlock) {
             [self performBlockWithLock:self.cancellationBlock];
-        });
-    }
+        }
+    });
 }
 
 - (void)setExecutionBlock:(void (^)(void))block
