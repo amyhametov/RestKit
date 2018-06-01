@@ -558,7 +558,12 @@ static NSArray *RKInsertInMetadataList(NSArray *list, id metadata1, id metadata2
         
         if ([destinationObject respondsToSelector:@selector(validateValue:forKeyPath:error:)]) {
             NSError *validationError;
-            success = [destinationObject validateValue:value forKeyPath:keyPath error:&validationError];
+            
+            if (@available(iOS 11, *) && ![self checkIfObject:destinationObject overridesSelector:@selector(validateValue:forKey:error:)]) {
+                success = YES;
+            } else {
+                success = [destinationObject validateValue:value forKeyPath:keyPath error:&validationError];
+            }
             if (!success) {
                 self.error = validationError;
                 if (validationError) {
@@ -573,6 +578,25 @@ static NSArray *RKInsertInMetadataList(NSArray *list, id metadata1, id metadata2
     }
 
     return success;
+}
+
+- (BOOL)checkIfObject:(id)object overridesSelector:(SEL)selector {
+    Class objSuperClass = [object superclass];
+    BOOL isMethodOverridden = NO;
+    
+    while (objSuperClass != Nil) {
+        
+        isMethodOverridden = [object methodForSelector: selector] !=
+        [objSuperClass instanceMethodForSelector: selector];
+        
+        if (isMethodOverridden) {
+            break;
+        }
+        
+        objSuperClass = [objSuperClass superclass];
+    }
+    
+    return isMethodOverridden;
 }
 
 - (BOOL)shouldSetValue:(id *)value forKeyPath:(NSString *)keyPath usingMapping:(RKPropertyMapping *)propertyMapping
