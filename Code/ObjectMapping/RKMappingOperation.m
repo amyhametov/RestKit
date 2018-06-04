@@ -559,6 +559,8 @@ static NSArray *RKInsertInMetadataList(NSArray *list, id metadata1, id metadata2
         if ([destinationObject respondsToSelector:@selector(validateValue:forKeyPath:error:)]) {
             NSError *validationError;
             
+            // Default implementation of validateValue:forKey:error: on iOS 11 is causes memory leaks.
+            // http://www.openradar.me/37115134
             if (@available(iOS 11, *) && ![self checkIfObject:destinationObject overridesSelector:@selector(validateValue:forKey:error:)]) {
                 success = YES;
             } else {
