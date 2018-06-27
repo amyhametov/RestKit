@@ -383,6 +383,7 @@ static NSString *RKMIMETypeFromAFHTTPClientParameterEncoding(AFRKHTTPClientParam
         if (nil == sharedManager) {
             [RKObjectManager setSharedManager:self];
         }
+        self.timeoutInterval = 60.f;
     }
 
     return self;
@@ -445,7 +446,7 @@ static NSString *RKMIMETypeFromAFHTTPClientParameterEncoding(AFRKHTTPClientParam
 	} else {
         request = [self.HTTPClient requestWithMethod:method path:path parameters:parameters];
     }
-
+    request.timeoutInterval = self.timeoutInterval;
 	return request;
 }
 

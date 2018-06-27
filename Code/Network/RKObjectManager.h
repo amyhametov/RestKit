@@ -321,6 +321,8 @@ RKMappingResult, RKRequestDescriptor, RKResponseDescriptor;
  */
 @property (nonatomic, strong) RKRouter *router;
 
+@property (nonatomic, assign) NSTimeInterval timeoutInterval;
+
 ///--------------------------------------------------
 /// @name Configuring Request and Response MIME Types
 ///--------------------------------------------------
