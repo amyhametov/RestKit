@@ -384,6 +384,7 @@ static NSString *RKMIMETypeFromAFHTTPClientParameterEncoding(AFRKHTTPClientParam
             [RKObjectManager setSharedManager:self];
         }
         self.timeoutInterval = 60.f;
+        self.cachePolicy = NSURLRequestUseProtocolCachePolicy;
     }
 
     return self;
@@ -447,6 +448,7 @@ static NSString *RKMIMETypeFromAFHTTPClientParameterEncoding(AFRKHTTPClientParam
         request = [self.HTTPClient requestWithMethod:method path:path parameters:parameters];
     }
     request.timeoutInterval = self.timeoutInterval;
+    request.cachePolicy = self.cachePolicy;
 	return request;
 }
 

@@ -323,6 +323,8 @@ RKMappingResult, RKRequestDescriptor, RKResponseDescriptor;
 
 @property (nonatomic, assign) NSTimeInterval timeoutInterval;
 
+@property (nonatomic, assign) NSURLRequestCachePolicy cachePolicy;
+
 ///--------------------------------------------------
 /// @name Configuring Request and Response MIME Types
 ///--------------------------------------------------
